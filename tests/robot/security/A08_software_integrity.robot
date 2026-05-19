@@ -2,7 +2,7 @@
 Resource    owasp_base.resource
 
 *** Test Cases ***
-Security Smoke
+Wasm Signature Verification Endpoint Placeholder
     Create Session    api    ${API_BASE}
-    ${resp}=    GET On Session    api    /healthz
-    Should Be Equal As Integers    ${resp.status_code}    200
+    ${r}=    GET On Session    api    /healthz
+    Should Be Equal As Integers    ${r.status_code}    200

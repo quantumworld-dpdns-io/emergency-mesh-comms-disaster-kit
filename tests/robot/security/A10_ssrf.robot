@@ -2,7 +2,7 @@
 Resource    owasp_base.resource
 
 *** Test Cases ***
-Security Smoke
+No Arbitrary URL Fetch Endpoint
     Create Session    api    ${API_BASE}
-    ${resp}=    GET On Session    api    /healthz
-    Should Be Equal As Integers    ${resp.status_code}    200
+    ${r}=    GET On Session    api    /api/v1/fetch?url=http://169.254.169.254    expected_status=404
+    Should Be Equal As Integers    ${r.status_code}    404

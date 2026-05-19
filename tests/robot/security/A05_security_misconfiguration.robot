@@ -2,7 +2,8 @@
 Resource    owasp_base.resource
 
 *** Test Cases ***
-Security Smoke
+Security Headers Present
     Create Session    api    ${API_BASE}
-    ${resp}=    GET On Session    api    /healthz
-    Should Be Equal As Integers    ${resp.status_code}    200
+    ${r}=    GET On Session    api    /healthz
+    Dictionary Should Contain Key    ${r.headers}    X-Content-Type-Options
+    Dictionary Should Contain Key    ${r.headers}    Content-Security-Policy
