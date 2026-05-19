@@ -1,1 +1,37 @@
-{}
+{
+  "name": "emergency-mesh-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "i18next": "^25.0.1",
+    "idb": "^8.0.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-force-graph-2d": "^1.27.0",
+    "react-i18next": "^15.5.2",
+    "react-leaflet": "^4.2.1",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@storybook/react-vite": "^8.6.14",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.6",
+    "@vitejs/plugin-react": "^4.4.1",
+    "terser": "^5.43.1",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0",
+    "vite-plugin-pwa": "^0.21.1",
+    "vitest": "^3.2.4"
+  }
+}
