@@ -1,1 +1,4 @@
-# Stub
+framework: robot
+output_dir: tests/robot/results
+variables:
+  API_BASE: http://localhost:8080
