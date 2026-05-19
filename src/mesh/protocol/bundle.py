@@ -30,3 +30,5 @@ class Bundle(BaseModel):
     primary: PrimaryBlock
     payload: bytes
     hops: list[str] = Field(default_factory=list)
+    encrypted: bool = False
+    encryption_nonce: bytes | None = None

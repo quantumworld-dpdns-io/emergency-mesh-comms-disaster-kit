@@ -5,6 +5,7 @@ import "sync"
 type Bundle struct {
 	ID      string
 	Payload []byte
+	Encrypted bool
 }
 
 type Forwarder struct {
