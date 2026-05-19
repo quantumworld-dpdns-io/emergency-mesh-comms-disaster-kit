@@ -1,0 +1,8 @@
+name: Performance
+on: [workflow_dispatch]
+jobs:
+  locust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Locust workflow scaffolded"

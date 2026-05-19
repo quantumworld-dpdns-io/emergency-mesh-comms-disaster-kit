@@ -1,0 +1,8 @@
+name: Robot Tests
+on: [pull_request]
+jobs:
+  robot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Robot workflow scaffolded"
