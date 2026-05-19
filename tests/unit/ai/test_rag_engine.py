@@ -1,25 +1,31 @@
 from __future__ import annotations
 
-from src.ai.agents.tasks.prioritize_task import prioritize_messages
-from src.ai.models.fallback import fallback_route_decision, fallback_triage
+import pytest
+
+from src.ai.knowledge.qdrant_client import EmergencyQdrantClient, KnowledgeItem
+from src.ai.knowledge.rag_engine import RAGEngine
+from src.ai.models.ollama_client import OllamaClient
 
 
-def test_fallback_route_decision() -> None:
-    assert fallback_route_decision(topology_size=1, queue_depth=0) == "epidemic"
-    assert fallback_route_decision(topology_size=10, queue_depth=200) == "spray_wait"
+class _FakeOllama(OllamaClient):
+    def __init__(self) -> None:
+        super().__init__("http://localhost:11434")
+
+    async def embed(self, model: str, text: str) -> list[float]:
+        return [float(len(text) % 7), 1.0, 0.5]
+
+    async def generate(self, model: str, prompt: str) -> str:
+        return "mock-answer"
 
 
-def test_fallback_triage() -> None:
-    assert fallback_triage("medical bleeding") == "medical"
-    assert fallback_triage("fire rescue needed") == "rescue"
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_rag_query_returns_answer_and_context() -> None:
+    qdrant = EmergencyQdrantClient()
+    qdrant.upsert(KnowledgeItem(doc_id="d1", text="first aid pressure", embedding=[1.0, 1.0, 0.2], metadata={"source": "first_aid.md"}))
+    qdrant.upsert(KnowledgeItem(doc_id="d2", text="radio procedure", embedding=[0.1, 0.2, 0.3], metadata={"source": "ics_radio.md"}))
 
-
-def test_prioritize_messages() -> None:
-    ordered = prioritize_messages(
-        [
-            {"priority": "general", "id": 1},
-            {"priority": "emergency", "id": 2},
-            {"priority": "medical", "id": 3},
-        ]
-    )
-    assert [m["id"] for m in ordered] == [2, 3, 1]
+    rag = RAGEngine(qdrant=qdrant, ollama=_FakeOllama(), model="x", embed_model="y")
+    out = await rag.query("how to stop bleeding")
+    assert out.answer == "mock-answer"
+    assert out.context_docs
