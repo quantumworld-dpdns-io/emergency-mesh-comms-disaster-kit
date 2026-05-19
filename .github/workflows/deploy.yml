@@ -1,10 +1,26 @@
 name: Deploy
 on: [workflow_dispatch]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "ssh deploy placeholder"
-      - run: curl -fsS http://localhost:8080/healthz || true
-      - run: curl -fsS http://localhost:8080/readyz || true
+      - name: Deploy stack
+        run: docker compose -f docker/docker-compose.yml up -d api redis qdrant web
+      - name: Health gate
+        run: |
+          for i in $(seq 1 60); do
+            H=$(curl -s http://localhost:8080/healthz | grep -c ok || true)
+            R=$(curl -s http://localhost:8080/readyz | grep -c ready || true)
+            if [ "$H" -gt 0 ] && [ "$R" -gt 0 ]; then
+              echo "healthy"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "health gate failed"
+          exit 1
+      - name: Rollback on failure
+        if: failure()
+        run: docker compose -f docker/docker-compose.yml down

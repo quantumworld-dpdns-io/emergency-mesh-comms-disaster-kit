@@ -1,8 +1,38 @@
 name: Performance
 on: [workflow_dispatch]
+
 jobs:
   locust:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Locust headless 50 users 5min placeholder with p95 assertion"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install locust
+      - run: |
+          docker compose -f docker/docker-compose.yml up -d api redis qdrant
+          for i in $(seq 1 30); do curl -fsS http://localhost:8080/healthz && break || sleep 2; done
+      - run: |
+          mkdir -p tests/performance/results
+          locust -f tests/performance/locustfile.py --headless -u 50 -r 5 -t 5m \
+            --host http://localhost:8080 \
+            --csv=tests/performance/results/locust
+      - run: |
+          python - << 'PY'
+import csv
+from pathlib import Path
+p = Path('tests/performance/results/locust_stats.csv')
+rows = list(csv.DictReader(p.open()))
+agg = next((r for r in rows if r.get('Name') == 'Aggregated'), None)
+if agg is None:
+    raise SystemExit('missing aggregated stats')
+p95 = float(agg['95%'])
+print('p95(ms)=', p95)
+if p95 >= 500.0:
+    raise SystemExit(f'p95 too high: {p95}')
+PY
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker/docker-compose.yml down -v

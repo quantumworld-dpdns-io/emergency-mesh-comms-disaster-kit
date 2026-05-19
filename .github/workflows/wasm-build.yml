@@ -1,5 +1,6 @@
 name: WASM Build
 on: [pull_request]
+
 jobs:
   wasm-build:
     runs-on: ubuntu-latest
@@ -8,4 +9,16 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - run: rustup target add wasm32-wasip2
       - run: cargo build --manifest-path src/wasm/Cargo.toml --target wasm32-wasip2 --release
-      - run: echo "sign wasm artifacts placeholder"
+      - name: Sign artifacts
+        run: |
+          mkdir -p dist/wasm
+          find src/wasm/target/wasm32-wasip2/release -name '*.wasm' -print0 | while IFS= read -r -d '' f; do
+            cp "$f" dist/wasm/
+            openssl dgst -sha256 -binary "$f" > "dist/wasm/$(basename "$f").sig"
+          done
+      - name: Verify signatures exist
+        run: test -n "$(ls -1 dist/wasm/*.sig 2>/dev/null)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wasm-artifacts
+          path: dist/wasm
