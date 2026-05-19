@@ -1,15 +1,16 @@
 # emergency-mesh-comms-disaster-kit
 
-Production-oriented emergency mesh communications kit for disaster conditions.
+Production-grade emergency mesh communications kit that turns phones and LoRa devices into resilient DTN-inspired message meshes during outages.
 
 ## Architecture
 
-- DTN-inspired store-and-forward mesh router
-- Multi-transport adapters (UDP/TCP/LoRa/WiFi Direct/BT/SMS)
-- FastAPI control/data plane
-- Offline-first React PWA client
-- Redis + DuckDB + Arrow + Qdrant data stack
-- Optional AI coordination with Ollama/LangGraph/CrewAI
+- `src/mesh`: Bundle Protocol v7 models, routing, store-and-forward, transport manager.
+- `src/lora`: LoRa drivers, packet codecs, ADR/FHSS/ARQ.
+- `src/api`: FastAPI REST + WebSocket + auth + audit endpoint.
+- `src/ai`: Ollama/LangGraph-style coordinator, MCP, RAG, federated learning.
+- `src/data`: Redis, DuckDB analytics, Arrow IPC/Flight.
+- `src/wasm`: Rust WASM plugins + Wasmtime host runtime.
+- `src/web`: React/TypeScript PWA, offline queue, websocket updates.
 
 ## Quickstart
 
@@ -21,20 +22,39 @@ cp .env.example .env
 make dev
 ```
 
-## Project Layout
+## Full Stack (Docker)
 
-- `src/mesh`: protocol, routing, transport
-- `src/lora`: LoRa drivers and packet pipeline
-- `src/data`: Redis/DuckDB/Arrow integration
-- `src/security`: crypto + audit
-- `src/api`: FastAPI API
-- `src/ai`: AI coordinator, RAG, MCP, federated
-- `src/wasm`: WASM plugins and host runtime
-- `src/web`: PWA client
+```bash
+docker compose -f docker/docker-compose.yml up -d
+```
 
-## Runbook
+Services:
+- API: `http://localhost:8080`
+- Web: `http://localhost:8081`
+- Qdrant: `http://localhost:6333`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
+- Phoenix: `http://localhost:6006`
 
-Operational runbook: `docs/runbooks/disaster-deployment.md`
+## Raspberry Pi / LoRa Notes
+
+- Set `LORA_ENABLED=true` and choose `LORA_DRIVER=sx127x` or `rfm95w`.
+- Configure `LORA_PORT` and regional band (`US915` / `EU868`) in `.env`.
+- Validate duty cycle and ADR settings before live deployment.
+
+## Runbooks and Plans
+
+- Disaster deployment runbook: `docs/runbooks/disaster-deployment.md`
+- Comprehensive implementation roadmap: `docs/plans/claude_plan.md`
+
+## Testing
+
+```bash
+make test
+pytest tests/integration -q
+robot tests/robot/functional
+robot tests/robot/security
+```
 
 ## License
 
