@@ -1,10 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import time
+from uuid import uuid4
 
 import duckdb
 
+from src.ai.agents.coordinator_graph import CoordinatorGraph, SqliteCheckpointLikeSaver
+from src.ai.agents.state_persistence import AgentStatePersistence
+from src.ai.observability.metrics import AIMetrics
+from src.ai.observability.phoenix import PhoenixTracer
+from src.ai.models.ollama_client import OllamaClient
 from src.config import settings
 from src.data.arrow.flight_server import MeshFlightServer
 from src.data.duckdb.schema import initialize_schema
@@ -25,6 +32,13 @@ class MeshApplication:
         self.redis = MeshRedisClient(settings.redis_url)
         self.duck_conn = duckdb.connect(settings.duckdb_path)
         self.flight_server = MeshFlightServer(settings.arrow_flight_host, settings.arrow_flight_port)
+        self.ollama = OllamaClient(settings.ollama_url)
+        self.ai_graph = CoordinatorGraph(self.ollama)
+        self.ai_checkpointer = SqliteCheckpointLikeSaver("data/agent_state.db")
+        self.ai_state_persistence = AgentStatePersistence(self.duck_conn)
+        self.ai_metrics = AIMetrics()
+        self.ai_tracer = PhoenixTracer()
+        self._ai_task: asyncio.Task[None] | None = None
 
         self._running = False
 
@@ -40,12 +54,34 @@ class MeshApplication:
         await self.store.initialize()
         self._running = True
         self.expiry_worker.start()
+        self._ai_task = asyncio.create_task(self._ai_loop())
         while self._running:
             _bundle = await self.store.dequeue_next()
             await asyncio.sleep(0.2)
 
+    async def _ai_loop(self) -> None:
+        while self._running:
+            state = {
+                "node_id": "node-1",
+                "topology_size": 1,
+                "queue_depth": 0,
+                "latest_incident": "no incident",
+            }
+            with self.ai_tracer.span("ai_decision_cycle"):
+                try:
+                    out = await self.ai_graph.run(state)
+                    self.ai_metrics.inc_decisions()
+                    self.ai_checkpointer.save(out)
+                    self.ai_state_persistence.save_snapshot(str(uuid4()), json.dumps(out))
+                except Exception:  # noqa: BLE001
+                    self.ai_metrics.inc_errors()
+            await asyncio.sleep(30.0)
+
     async def stop(self) -> None:
         self._running = False
+        if self._ai_task:
+            self._ai_task.cancel()
+            await asyncio.gather(self._ai_task, return_exceptions=True)
         await self.expiry_worker.stop()
         await self.redis.close()
         self.duck_conn.close()
