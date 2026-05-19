@@ -2,10 +2,10 @@ import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 vi.mock("react-leaflet", () => ({
-  MapContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="map-container">{children}</div>,
+  MapContainer: ({ children }: { children: unknown }) => <div data-testid="map-container">{children as any}</div>,
   TileLayer: () => <div data-testid="tile-layer" />, 
-  Marker: ({ children }: { children: React.ReactNode }) => <div data-testid="marker">{children}</div>,
-  Popup: ({ children }: { children: React.ReactNode }) => <div>{children}</div>
+  Marker: ({ children }: { children: unknown }) => <div data-testid="marker">{children as any}</div>,
+  Popup: ({ children }: { children: unknown }) => <div>{children as any}</div>
 }));
 
 import GeoMap from "../components/GeoMap";
