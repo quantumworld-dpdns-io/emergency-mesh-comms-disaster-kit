@@ -16,7 +16,10 @@ class ExpiryWorker:
     async def _run(self) -> None:
         while not self._stop.is_set():
             await self.store.delete_expired(int(time.time()))
-            await asyncio.wait_for(self._stop.wait(), timeout=self.poll_interval_seconds)
+            try:
+                await asyncio.wait_for(self._stop.wait(), timeout=self.poll_interval_seconds)
+            except TimeoutError:
+                continue
 
     def start(self) -> None:
         self._task = asyncio.create_task(self._run())
@@ -24,7 +27,4 @@ class ExpiryWorker:
     async def stop(self) -> None:
         self._stop.set()
         if self._task:
-            try:
-                await self._task
-            except TimeoutError:
-                pass
+            await self._task
