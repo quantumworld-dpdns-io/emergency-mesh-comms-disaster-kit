@@ -38,6 +38,7 @@ class InMemoryStore:
             NeighborResponse(node_id="node-3", eid="dtn://node-3", lqi=63.2),
         ]
         self.events: asyncio.Queue[dict[str, object]] = asyncio.Queue()
+        self.audit_events: list[dict[str, object]] = []
 
 
 def _build_dependencies() -> tuple[MeshRedisClient | None, duckdb.DuckDBPyConnection, MeshFlightServer]:
@@ -179,6 +180,15 @@ async def submit_bundle(
         "hops": 0,
         "created_at": datetime.now(UTC).isoformat(),
     }
+    app.state.mem.audit_events.append(
+        {
+            "ts": datetime.now(UTC).isoformat(),
+            "category": "bundle_enqueue",
+            "severity": "low",
+            "process": "api",
+            "detail": f"bundle={bundle_id}",
+        }
+    )
     await app.state.mem.events.put({"type": "bundle_queued", "bundle_id": bundle_id})
     return BundleResponse(bundle_id=bundle_id, status="queued")
 
@@ -226,6 +236,15 @@ async def send_message(
             "created_at": datetime.now(UTC).isoformat(),
         }
     )
+    app.state.mem.audit_events.append(
+        {
+            "ts": datetime.now(UTC).isoformat(),
+            "category": "message_send",
+            "severity": "low",
+            "process": "api",
+            "detail": f"message={message_id}",
+        }
+    )
     await app.state.mem.events.put({"type": "message_sent", "message_id": message_id, "bundle_id": bundle_id})
     return MessageResponse(message_id=message_id, bundle_id=bundle_id)
 
@@ -245,6 +264,15 @@ async def emergency_broadcast(
     _admin: NodePrincipal = Depends(get_admin_node),
 ) -> dict[str, object]:
     event = {"type": "emergency", "message": message, "neighbors": len(app.state.mem.neighbors)}
+    app.state.mem.audit_events.append(
+        {
+            "ts": datetime.now(UTC).isoformat(),
+            "category": "emergency_broadcast",
+            "severity": "high",
+            "process": "api",
+            "detail": message,
+        }
+    )
     await app.state.mem.events.put(event)
     return {"status": "broadcasted", "targets": len(app.state.mem.neighbors)}
 
@@ -280,3 +308,27 @@ async def data_health() -> dict[str, object]:
     if app.state.data_health is None:
         return {"redis": {"ok": False}, "duckdb": {"ok": True}, "arrow": {"ok": True}}
     return await app.state.data_health.check()
+
+
+@app.get("/api/v1/audit/events", tags=["admin"])
+async def audit_events(
+    start: str | None = None,
+    end: str | None = None,
+    severity: str | None = None,
+    category: str | None = None,
+    _admin: NodePrincipal = Depends(get_admin_node),
+) -> dict[str, object]:
+    def _in_range(ts: str) -> bool:
+        t = datetime.fromisoformat(ts)
+        if start and t < datetime.fromisoformat(start):
+            return False
+        if end and t > datetime.fromisoformat(end):
+            return False
+        return True
+
+    rows = [e for e in app.state.mem.audit_events if _in_range(str(e.get("ts")))]
+    if severity:
+        rows = [e for e in rows if str(e.get("severity", "")).lower() == severity.lower()]
+    if category:
+        rows = [e for e in rows if str(e.get("category", "")).lower() == category.lower()]
+    return {"items": rows, "count": len(rows)}
