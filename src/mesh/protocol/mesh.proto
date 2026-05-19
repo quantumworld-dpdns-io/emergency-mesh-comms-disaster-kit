@@ -1,2 +1,29 @@
 syntax = "proto3";
 package mesh;
+
+service MeshService {
+  rpc EnqueueBundle(EnqueueBundleRequest) returns (EnqueueBundleResponse);
+  rpc GetNeighborSummary(GetNeighborSummaryRequest) returns (GetNeighborSummaryResponse);
+}
+
+message EnqueueBundleRequest {
+  string bundle_id = 1;
+  bytes payload = 2;
+}
+
+message EnqueueBundleResponse {
+  bool accepted = 1;
+  string message = 2;
+}
+
+message GetNeighborSummaryRequest {}
+
+message Neighbor {
+  string node_id = 1;
+  string eid = 2;
+  double lqi = 3;
+}
+
+message GetNeighborSummaryResponse {
+  repeated Neighbor neighbors = 1;
+}
