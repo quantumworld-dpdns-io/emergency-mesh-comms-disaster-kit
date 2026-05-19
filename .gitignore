@@ -36,6 +36,7 @@ node_modules/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+coverage/
 htmlcov/
 .coverage
 coverage.xml
