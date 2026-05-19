@@ -4,14 +4,23 @@ on:
   schedule:
     - cron: '0 3 * * 1'
 jobs:
-  scan:
+  security-scan:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
       - run: pip install pip-audit bandit semgrep
-      - run: pip-audit || true
-      - run: bandit -r src || true
-      - run: semgrep --config auto src || true
+      - run: pip-audit
+      - run: bandit -r src
+      - run: semgrep --config auto src
+      - run: npm audit --audit-level=high || true
+  zap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "ZAP baseline/full scan placeholder"

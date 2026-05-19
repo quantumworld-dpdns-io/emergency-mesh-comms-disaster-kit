@@ -5,4 +5,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Deploy workflow scaffolded"
+      - run: echo "ssh deploy placeholder"
+      - run: curl -fsS http://localhost:8080/healthz || true
+      - run: curl -fsS http://localhost:8080/readyz || true

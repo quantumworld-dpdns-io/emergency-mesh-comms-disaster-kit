@@ -3,8 +3,10 @@ on:
   push:
     branches: [main]
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Docker workflow scaffolded"
+      - run: docker build -f docker/Dockerfile.api -t ghcr.io/${{ github.repository }}/api:${{ github.sha }} .
+      - run: docker build -f docker/Dockerfile.mesh -t ghcr.io/${{ github.repository }}/mesh:${{ github.sha }} .
+      - run: docker build -f docker/Dockerfile.web -t ghcr.io/${{ github.repository }}/web:${{ github.sha }} .

@@ -1,8 +1,11 @@
 name: WASM Build
 on: [pull_request]
 jobs:
-  build:
+  wasm-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "WASM build scaffolded"
+      - uses: dtolnay/rust-toolchain@stable
+      - run: rustup target add wasm32-wasip2
+      - run: cargo build --manifest-path src/wasm/Cargo.toml --target wasm32-wasip2 --release
+      - run: echo "sign wasm artifacts placeholder"

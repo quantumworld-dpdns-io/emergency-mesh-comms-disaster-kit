@@ -5,4 +5,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Locust workflow scaffolded"
+      - run: echo "Locust headless 50 users 5min placeholder with p95 assertion"
