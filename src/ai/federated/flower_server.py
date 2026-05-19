@@ -44,4 +44,10 @@ class MeshFlowerServer:
                 avg_loss = sum(res.loss for res in local) / max(len(local), 1)
                 acc = max(0.0, min(1.0, 1.0 - avg_loss))
                 self.metrics.append(RoundMetrics(round_num=r, avg_loss=avg_loss, accuracy_stub=acc))
+                self.tracer.record(
+                    "fl_round_metrics",
+                    round_number=r,
+                    loss=avg_loss,
+                    accuracy=acc,
+                )
         return global_weights
