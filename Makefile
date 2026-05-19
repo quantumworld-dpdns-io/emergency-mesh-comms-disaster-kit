@@ -15,6 +15,10 @@ lint:
 
 build-wasm:
 	cargo build --manifest-path src/wasm/Cargo.toml --target wasm32-wasip2 --release
+	for f in src/wasm/target/wasm32-wasip2/release/*.wasm; do \
+		[ -f "$$f" ] || continue; \
+		openssl dgst -sha256 -binary "$$f" > "$$f.sig"; \
+	done
 
 robot:
 	robot tests/robot/functional
