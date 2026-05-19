@@ -1,1 +1,2 @@
-# Stub
+otlp:
+  endpoint: http://phoenix:6006

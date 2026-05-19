@@ -1,34 +1,41 @@
 # emergency-mesh-comms-disaster-kit
 
-> Emergency mesh comms kit for disasters – turns phones and LoRa devices into resilient DTN-inspired message meshes during outages
+Production-oriented emergency mesh communications kit for disaster conditions.
 
-## Overview
+## Architecture
 
-This repository is part of the [quantumworld-dpdns-io](https://github.com/quantumworld-dpdns-io) Wild SaaS & Tech Development initiative.
+- DTN-inspired store-and-forward mesh router
+- Multi-transport adapters (UDP/TCP/LoRa/WiFi Direct/BT/SMS)
+- FastAPI control/data plane
+- Offline-first React PWA client
+- Redis + DuckDB + Arrow + Qdrant data stack
+- Optional AI coordination with Ollama/LangGraph/CrewAI
 
-## Getting Started
+## Quickstart
 
 ```bash
-# Clone the repo
-git clone https://github.com/quantumworld-dpdns-io/emergency-mesh-comms-disaster-kit.git
-cd emergency-mesh-comms-disaster-kit
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+cp .env.example .env
+make dev
 ```
 
-## Project Structure
+## Project Layout
 
-```
-.
-├── src/          # Application source code
-├── docs/         # Architecture decisions, API specs, runbooks
-├── tests/        # Unit / integration / e2e tests
-└── .github/
-    └── workflows/ # CI/CD pipelines
-```
+- `src/mesh`: protocol, routing, transport
+- `src/lora`: LoRa drivers and packet pipeline
+- `src/data`: Redis/DuckDB/Arrow integration
+- `src/security`: crypto + audit
+- `src/api`: FastAPI API
+- `src/ai`: AI coordinator, RAG, MCP, federated
+- `src/wasm`: WASM plugins and host runtime
+- `src/web`: PWA client
 
-## Contributing
+## Runbook
 
-Please read [CONTRIBUTING.md](docs/CONTRIBUTING.md) before opening a pull request.
+Operational runbook: `docs/runbooks/disaster-deployment.md`
 
 ## License
 
-[MIT](LICENSE)
+MIT

@@ -1,1 +1,19 @@
-# Stub
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    ports: ["8080:8080"]
+  mesh:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mesh
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports: ["6333:6333"]
+  ollama:
+    image: ollama/ollama:latest
+    ports: ["11434:11434"]
