@@ -1,0 +1,17 @@
+-r requirements.txt
+
+# LoRa / hardware
+spidev>=3.6
+RPi.GPIO>=0.7.1; platform_machine == "aarch64" or platform_machine == "armv7l"
+adafruit-circuitpython-rfm9x>=2.4.0
+adafruit-circuitpython-busdevice>=5.2.9
+
+# Serial / SMS fallback
+pyserial>=3.5
+python-gammu>=3.2.4; sys_platform == "linux"
+
+# Bluetooth
+pybluez2>=0.46; sys_platform != "darwin"
+
+# MQTT (LoRa gateway bridge)
+paho-mqtt>=2.1.0
