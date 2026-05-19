@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import os
+
+from src.lora.drivers.detector import detect_lora_driver
+from src.lora.lora_transport import LoRaTransport
 
 from .base import Transport
 from .event_bus import MeshEventBus
@@ -20,6 +24,14 @@ class TransportManager:
 
     def register(self, transport: Transport) -> None:
         self.registry.register(transport)
+
+    def auto_register_lora(self) -> bool:
+        enabled = os.getenv("LORA_ENABLED", "false").lower() == "true"
+        if not enabled:
+            return False
+        node_id = int(os.getenv("LORA_NODE_ID", "1"))
+        self.register(LoRaTransport(node_id=node_id, driver=detect_lora_driver()))
+        return True
 
     async def send(self, transport_name: str, destination: str, payload: bytes) -> None:
         transport = self.registry.get(transport_name)
