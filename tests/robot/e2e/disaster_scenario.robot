@@ -2,7 +2,9 @@
 Resource    ../common.resource
 
 *** Test Cases ***
-Smoke
+Disaster Scenario Minimal Flow
     Create Session    api    ${API_BASE}
-    ${resp}=    GET On Session    api    /healthz
-    Should Be Equal As Integers    ${resp.status_code}    200
+    ${tok}=    POST On Session    api    /api/v1/auth/token?node_id=adm&admin=true
+    ${t}=    Set Variable    ${tok.json()}[token]
+    ${e}=    POST On Session    api    /api/v1/emergency?message=E2E    headers=${{'Authorization': 'Bearer ' + $t}}
+    Should Be Equal As Integers    ${e.status_code}    200
