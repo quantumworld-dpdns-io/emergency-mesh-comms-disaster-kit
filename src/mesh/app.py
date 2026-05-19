@@ -3,6 +3,12 @@ from __future__ import annotations
 import asyncio
 import time
 
+import duckdb
+
+from src.config import settings
+from src.data.arrow.flight_server import MeshFlightServer
+from src.data.duckdb.schema import initialize_schema
+from src.data.redis.client import MeshRedisClient
 from src.logging_config import configure_logging
 from src.mesh.protocol.bundle import Bundle
 from src.mesh.router.bundle_store import BundleStore
@@ -15,6 +21,11 @@ class MeshApplication:
         self.router = RouterFactory.create(strategy)
         self.store = BundleStore(db_path=db_path)
         self.expiry_worker = ExpiryWorker(self.store, poll_interval_seconds=30.0)
+
+        self.redis = MeshRedisClient(settings.redis_url)
+        self.duck_conn = duckdb.connect(settings.duckdb_path)
+        self.flight_server = MeshFlightServer(settings.arrow_flight_host, settings.arrow_flight_port)
+
         self._running = False
 
     async def enqueue_bundle(self, bundle: Bundle) -> None:
@@ -24,6 +35,8 @@ class MeshApplication:
         await self.store.enqueue(bundle, expires_at_epoch=expires, priority=priority)
 
     async def start(self) -> None:
+        await self.redis.connect()
+        initialize_schema(self.duck_conn)
         await self.store.initialize()
         self._running = True
         self.expiry_worker.start()
@@ -34,6 +47,8 @@ class MeshApplication:
     async def stop(self) -> None:
         self._running = False
         await self.expiry_worker.stop()
+        await self.redis.close()
+        self.duck_conn.close()
 
 
 def main() -> None:
