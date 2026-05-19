@@ -1,0 +1,8 @@
+{
+  "title": "AI Agents",
+  "panels": [
+    {"title": "AI Decisions Total", "type": "timeseries"},
+    {"title": "AI Errors Total", "type": "timeseries"},
+    {"title": "FL Round Loss", "type": "timeseries"}
+  ]
+}

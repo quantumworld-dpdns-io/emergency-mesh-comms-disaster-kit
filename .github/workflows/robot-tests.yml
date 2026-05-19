@@ -1,0 +1,34 @@
+name: Robot Tests
+on: [pull_request]
+
+jobs:
+  functional-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install robotframework robotframework-requests requests
+      - run: docker compose -f docker/docker-compose.yml up -d api redis qdrant
+      - run: |
+          for i in $(seq 1 30); do curl -fsS http://localhost:8080/healthz && break || sleep 2; done
+      - run: robot tests/robot/functional
+      - run: robot tests/robot/e2e
+      - if: always()
+        run: docker compose -f docker/docker-compose.yml down -v
+
+  security-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install robotframework robotframework-requests requests
+      - run: docker compose -f docker/docker-compose.yml up -d api redis qdrant
+      - run: |
+          for i in $(seq 1 30); do curl -fsS http://localhost:8080/healthz && break || sleep 2; done
+      - run: robot tests/robot/security
+      - if: always()
+        run: docker compose -f docker/docker-compose.yml down -v

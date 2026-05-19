@@ -1,0 +1,8 @@
+{
+  "title": "Mesh Overview",
+  "panels": [
+    {"title": "Delivery Ratio", "type": "timeseries"},
+    {"title": "LQI Heatmap", "type": "heatmap"},
+    {"title": "Queue Depth", "type": "timeseries"}
+  ]
+}

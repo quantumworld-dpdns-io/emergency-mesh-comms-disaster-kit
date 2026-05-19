@@ -1,0 +1,5 @@
+otlp:
+  endpoint: http://phoenix:6006
+  service_name: emergency-mesh-ai
+tracing:
+  enabled: true

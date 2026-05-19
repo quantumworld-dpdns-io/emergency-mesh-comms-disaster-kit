@@ -1,0 +1,23 @@
+apiVersion: cilium.io/v1alpha1
+kind: TracingPolicy
+metadata:
+  name: mesh-network-policy
+spec:
+  kprobes:
+    - call: "__x64_sys_connect"
+      syscall: true
+      selectors:
+        - matchArgs:
+            - index: 0
+              operator: "NotDPort"
+              values: ["53", "123", "443", "6333", "6379", "8080", "11434"]
+          matchActions:
+            - action: Post
+    - call: "__x64_sys_execve"
+      syscall: true
+      selectors:
+        - matchBinaries:
+            - operator: In
+              values: ["/usr/local/bin/python", "/usr/bin/python3", "/app/mesh-router"]
+          matchActions:
+            - action: Post

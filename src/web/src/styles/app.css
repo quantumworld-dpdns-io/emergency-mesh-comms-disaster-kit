@@ -1,0 +1,30 @@
+:root {
+  --bg: #0f1e29;
+  --card: #183447;
+  --accent: #ed6a5a;
+  --text: #f6f5f3;
+  --muted: #9fb8c8;
+  --ok: #7bc950;
+  --warn: #f4d35e;
+}
+:root[data-theme="light"] {
+  --bg: #f7efe2;
+  --card: #fff9ee;
+  --accent: #d1495b;
+  --text: #132a33;
+  --muted: #51636d;
+  --ok: #3f8f2f;
+  --warn: #b88700;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Avenir Next", "Trebuchet MS", sans-serif; background: radial-gradient(circle at 20% 0%, #204057 0%, var(--bg) 55%); color: var(--text); }
+.app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.sidebar { padding: 16px; border-right: 1px solid #29485d; }
+.main { padding: 16px; }
+.card { background: var(--card); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+button { background: var(--accent); color: white; border: 0; border-radius: 10px; padding: 8px 10px; cursor: pointer; }
+input, textarea, select { width: 100%; background: #0e2532; color: var(--text); border: 1px solid #33586e; border-radius: 8px; padding: 8px; }
+:root[data-theme="light"] input, :root[data-theme="light"] textarea, :root[data-theme="light"] select { background: white; color: var(--text); }
+.badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; display: inline-block; }
+@media (max-width: 800px) { .app { grid-template-columns: 1fr; } .sidebar { border-right: 0; border-bottom: 1px solid #29485d; } }

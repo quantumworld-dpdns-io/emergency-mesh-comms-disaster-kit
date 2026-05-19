@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=68", "setuptools-scm>=8"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "emergency-mesh-comms-disaster-kit"
+version = "0.1.0"
+description = "Emergency mesh comms kit — turns phones and LoRa devices into resilient DTN-inspired message meshes during outages"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+authors = [{ name = "quantumworld-dpdns-io" }]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "unit: fast isolated unit tests",
+    "integration: tests requiring external services",
+    "performance: load and stress tests",
+    "robot: Robot Framework tests (run via robot CLI)",
+    "security: security-focused tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "src/wasm/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "S", "B", "A", "C4", "PT", "RUF"]
+ignore = [
+    "S101",   # assert in tests
+    "S603",   # subprocess calls — intentional in some drivers
+    "S607",   # partial path in subprocess — intentional
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "N"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = [
+    "cbor2.*",
+    "redis.*",
+    "duckdb.*",
+    "pyarrow.*",
+    "adafruit_rfm9x.*",
+    "spidev.*",
+    "wasmtime.*",
+    "langgraph.*",
+    "crewai.*",
+    "flower.*",
+    "flwr.*",
+]
+ignore_missing_imports = true

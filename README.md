@@ -1,34 +1,61 @@
 # emergency-mesh-comms-disaster-kit
 
-> Emergency mesh comms kit for disasters – turns phones and LoRa devices into resilient DTN-inspired message meshes during outages
+Production-grade emergency mesh communications kit that turns phones and LoRa devices into resilient DTN-inspired message meshes during outages.
 
-## Overview
+## Architecture
 
-This repository is part of the [quantumworld-dpdns-io](https://github.com/quantumworld-dpdns-io) Wild SaaS & Tech Development initiative.
+- `src/mesh`: Bundle Protocol v7 models, routing, store-and-forward, transport manager.
+- `src/lora`: LoRa drivers, packet codecs, ADR/FHSS/ARQ.
+- `src/api`: FastAPI REST + WebSocket + auth + audit endpoint.
+- `src/ai`: Ollama/LangGraph-style coordinator, MCP, RAG, federated learning.
+- `src/data`: Redis, DuckDB analytics, Arrow IPC/Flight.
+- `src/wasm`: Rust WASM plugins + Wasmtime host runtime.
+- `src/web`: React/TypeScript PWA, offline queue, websocket updates.
 
-## Getting Started
+## Quickstart
 
 ```bash
-# Clone the repo
-git clone https://github.com/quantumworld-dpdns-io/emergency-mesh-comms-disaster-kit.git
-cd emergency-mesh-comms-disaster-kit
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+cp .env.example .env
+make dev
 ```
 
-## Project Structure
+## Full Stack (Docker)
 
-```
-.
-├── src/          # Application source code
-├── docs/         # Architecture decisions, API specs, runbooks
-├── tests/        # Unit / integration / e2e tests
-└── .github/
-    └── workflows/ # CI/CD pipelines
+```bash
+docker compose -f docker/docker-compose.yml up -d
 ```
 
-## Contributing
+Services:
+- API: `http://localhost:8080`
+- Web: `http://localhost:8081`
+- Qdrant: `http://localhost:6333`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000`
+- Phoenix: `http://localhost:6006`
 
-Please read [CONTRIBUTING.md](docs/CONTRIBUTING.md) before opening a pull request.
+## Raspberry Pi / LoRa Notes
+
+- Set `LORA_ENABLED=true` and choose `LORA_DRIVER=sx127x` or `rfm95w`.
+- Configure `LORA_PORT` and regional band (`US915` / `EU868`) in `.env`.
+- Validate duty cycle and ADR settings before live deployment.
+
+## Runbooks and Plans
+
+- Disaster deployment runbook: `docs/runbooks/disaster-deployment.md`
+- Comprehensive implementation roadmap: `docs/plans/claude_plan.md`
+
+## Testing
+
+```bash
+make test
+pytest tests/integration -q
+robot tests/robot/functional
+robot tests/robot/security
+```
 
 ## License
 
-[MIT](LICENSE)
+MIT
